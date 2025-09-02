@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fl-tabular"
+version = "1.0.0"
+description = "Adult Census Income Tabular Dataset and Federated Learning in Flower"
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.15.2",
+    "flwr-datasets>=0.5.0",
+    "torch==2.5.1",
+    "scikit-learn==1.6.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "flwrlabs"
+
+[tool.flwr.app.components]
+serverapp = "fltabular.server_app:app"
+clientapp = "fltabular.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 5
+num-attackers = 1
+partition-type = "iid"  # Options: "iid", "dirichlet"
+dirichlet-alpha = 0.5  # Only used when partition-type is "dirichlet"
+use-wandb = false  # Set to true to enable wandb logging
+attacker-client-id = 1
+target-client-id = 2
+enable-attacks = true  # Set to false to disable attack logic
+attack-rounds = "5"  # Comma-separated rounds to attack in (1-indexed, e.g., "2,3" attacks in rounds 2 and 3)
+contribution-method = "loo"  # Options: "loo", "shapley"
+attack-type = "targeted"    # Options: "targeted", "self-promotion"
+
+# Shapley Hyperparameters (only used if contribution-method is "shapley")
+shapley-eps = 0.001                 # In-round truncation threshold
+shapley-round-trunc-threshold = 0.001 # Between-round truncation threshold
+shapley-convergence-criteria = 0.05 # Error tolerance for convergence
+shapley-last-k = 10                 # Number of permutations to check for convergence
+shapley-converge-min = 30           # Minimal number of permutations to evaluate
+shapley-max-percentage = 0.8        # Max percentage of permutations to evaluate
+shapley-normalize = false           # Whether to normalize Shapley values (usually False for attacks)
+
+[tool.flwr.federations]
+default = "local-simulation"
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 5

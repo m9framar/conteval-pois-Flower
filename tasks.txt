@@ -1,0 +1,147 @@
+ACE
+- Aggregations: FedAvg, MultiKRUM, FoolsGold, TrimmedMedian, FABA, Sniper
+- Data: MNIST, CIFAR10, TinyImage
+- Model: CNN 
+- Baseline: FedSV, LOO, CFFL, GDR, RFFL
+- Setup: IID, IID but different size, non-IID
+- Take: Attacker could reach #1 score
+
+
+Action Points (until 22nd of July)
+- Literature Review
+  - Check all results's title, if relevant read abstract, if still relevant, quickread paper and writ summary and how it relates to us
+  - Forward-backward snowballing on the selected relevant papers
+- Setup Experiment
+  - Select data/model/client
+    - Runable settings such as CIFAR10+CNN+IID in Flower
+    - Obtain (request from author / implement using ART) ACE's code
+      - Improve Attack
+        - Better Poisoning
+        - Add stealthyness
+    - Develop Defense
+
+Skeleton Paper
+- Intorduction
+  - LinReg ex: poison to increase/decrease a datapoint's score
+- Related Work
+  - LitRev
+- Model
+  - Poison model/data such that increase/decrease target samlpe/client contribution
+    - ACE: model - increase - client - target: self
+- Experiments
+  - Task: Tabular (ADULT), CV (CIFAR10), NLP (Shapespeare), TS (Stock)
+  - Model: Basic (LinReg), Classic (CNN), Advanced (Transformers)
+  - Baseline: Shapley-based (GTG/KNN/...)
+
+  -mit akarunk átverni? 
+  cos distance vs Shapley
+
+  Get GTG-Shapley from CrySyS Repo 
+RW: LitRew extend
+BG: Detail ACE + ART
+Study ACE's PseudoCode + ART poisoning attacks
+Goal (ACE: model- increase - client-self - naive)
+model - increase - client-self - advanced (ACE for Shapley)
+data - decrease - client-self - naive/advanced (data-poi for self ContScore)
+model - decrease - client-other - naive/advanced (model-poi for other's ContScore)
+
+sept12:
+Meeting Notes (9/12)
+Shapley code is migrated from Flower 1.7 to newer release and it is working. 
+GTG is not tested yet, but should be ready too. 
+ACE paper is well understood, authors are contacted for code.
+Flower overview is sufficiently high.  
+ART needs more studying.
+Work to be done
+Formalizing the problems (detailed below)
+Put the problem definitions into the paper
+Implement the optimization problems
+Select use-cases and execute attacks
+Include experimental setup into the paper
+Evaluate results
+Include tables and figures to show the results, and ellaborate on findings in the paper
+Notations
+M^i - Aggregated model in round i
+M^i_j - Locally trained model by client j in round i
+(We can use G aka gradients instead of models)
+ToDo (Formalization)
+DataPoisoning to reduce self ContScore
+Max_{D_j}[CosDist(M^i_j;M^i)] where M^i_j=Train(D_j,M^i)
+ModelPoisoning to increase self ContScore (ACE)
+ContScore for client j: CosDist(M^i_j;M^i)
+Round i of honest client j: Train(D_j,M^(i-1))=M^i_j
+Round i of attacker client j: Attack(M^(i-2),M^(i-1))=M^i_j 'Predicts M^(i+1) using the previous global change'
+Min_{M^i_j}[CosDist(M^i_j;M^i)]
+Doing some approximations using Hessian Mx, etc., but ultimately the attacker predicts the next global model (instead of training)
+ModelPoisoning to reduce others ContScore
+Similarly to ACE but put instead of minimizing self distance, maximize other's
+Max_{M^i_j}[CosDist(M^i_k;M^i)] where j is attacker, k is target
+Ultimately, besides the global model the attacker needs to predict the local model of the target and submit a local model of its own which moved the global model furthest from the target local model (instead of training)
+Need to access the local model of the target, so different threath model and assumptions are needed
+ 
+Instead of min/max CosDist, we can manipulate L1O and GTG scores as well!
+CosDist(M^i_j;M^i)
+L1O(M^i_j;M^i) = Eval(M^i) - Eval(M^i-M^i_j)
+GTG(M^i_1;...;^i_n;M^{i-1}) = ...
+ToDo (Writing)
+Intro
+Add Figure 1
+Add Scenarios
+Model
+Add problem formalization
+Add pseudocode
+Experiments
+Add experimental Setup
+ToDo (UseCases)
+Dataset: CIFAR10 (for CV) & ADULT (for Tabular) 
+Model: CNN (for CV) / XGB (for Tabular)
+Distribution: IID / Non-IID (with Dirichlet: low (0.1) / high (1.0) unbalance)
+Client number: 5
+CE: CosDist / L1O / GTG
+2 (data/model) x 3 (data distribution) x 3 (evaluation metric) x 10 (for statistical relevance) < 200 training 
+
+Create baseline skeleton framework (until Feb 16th)
+Flower classification implementation
+UseCase 1: CV
+Pl. Basic CNN or AlexNet with CIFAR10
+UseCase 2: NLP
+Pl. LSTM or BERT for sentient anal using IMDB
+UseCase 3: Tabular
+Pl. RF or GB for salary prediction using ADULT
+Setup/parameters
+20 training rounds
+Optimize hyperparameters (when there is no attack) and use that for all scenarios
+5 clients
+Base Line: 0 attacker - 5 benign
+For now focus on this setting
+Self- Increase: 1 attacker - 4 benign
+Model Attack: 1 attacker - 1 target - 3 benign
+Data Attack: 1 target - 4 benign
+ContEval
+Compute GTG-based
+Pl. eval function is loss
+Optimize eps1/eps2 task-wise: different for CV/NLP/Tabular
+Compute Cosine-based
+As in ACE or FedADP
+ Compute both round-wise
+For round 1st & 2nd (early)
+For round 10th (middle)
+For round 20th (late)
+
+model poisoning:
+scenarios: server is the attacker and controls one client, the server can spend any amount of time to evaluate the results,
+setting the dummy client's gradients in a way such that the other clients' values are modified accordingly.
+the attacking server can acces but cant modify the other (n-1) clients' gradients.
+the attacker has one target: either increase self or decrease other
+  used metric:
+    L1O
+data poisoning:
+  TBD
+at first, use SGD or any optimization on how to modify the gradient in order to obtain goal (increase/decrease specific value)
+with a constrain like global model must improve 
+After you can use dual optimization when the client is not dummy but have a dataset
+1) Model Poisoning to increase own LOO for Tabular
+2) Model Poisoning to decrease target's LOO for Tabular
+3) Try CN & NLP
+4) Try more complex ContEval
+5) Data Poisoning
