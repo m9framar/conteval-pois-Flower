@@ -413,6 +413,8 @@ def plot_final_contribution_boxplot(df, max_clients, subtitle, output_path, dist
                 hue_order=statuses_to_compare, # This ensures correct ordering even if we only have one status
                 palette=current_palette,
                 width=0.6,
+                showfliers=False,  # Hide outliers
+                whis=0,  # Remove whiskers by setting whisker length to 0
                 ax=ax
             )
             
@@ -546,6 +548,8 @@ def plot_final_contribution_boxplot(df, max_clients, subtitle, output_path, dist
                     hue_order=statuses_to_compare,
                     palette=current_palette,
                     width=0.6,
+                    showfliers=False,  # Hide outliers
+                    whis=0,  # Remove whiskers by setting whisker length to 0
                     ax=ax_subplot
                 )
                 
@@ -623,17 +627,17 @@ def plot_final_contribution_boxplot(df, max_clients, subtitle, output_path, dist
                 # Position legend just above the plot area (closer to the plot)
                 legend_y = max(bbox.y1, bbox_last.y1) + 0.02  # Just above the top of the plot area
                 
-                # Add left legend: colored square followed by black text
-                fig_combined.text(bbox.x0, legend_y, '■', transform=fig_combined.transFigure, 
+                # Add left legend: colored rectangle followed by black text
+                fig_combined.text(bbox.x0, legend_y, '▬', transform=fig_combined.transFigure, 
                                 fontsize=POSTER_FONT_SIZE, verticalalignment='bottom', color=left_color, weight='bold')
                 fig_combined.text(bbox.x0 + 0.025, legend_y, left_label, transform=fig_combined.transFigure, 
-                                fontsize=POSTER_FONT_SIZE, verticalalignment='bottom', color='black', weight='bold')
+                                fontsize=POSTER_FONT_SIZE, verticalalignment='bottom', color='black', weight='bold', family='serif')
                 
-                # Add right legend: black text followed by colored square
+                # Add right legend: black text followed by colored rectangle
                 fig_combined.text(bbox_last.x1 - 0.025, legend_y, right_label, transform=fig_combined.transFigure, 
                                 fontsize=POSTER_FONT_SIZE, verticalalignment='bottom', horizontalalignment='right', 
-                                color='black', weight='bold')
-                fig_combined.text(bbox_last.x1, legend_y, '■', transform=fig_combined.transFigure, 
+                                color='black', weight='bold', family='serif')
+                fig_combined.text(bbox_last.x1, legend_y, '▬', transform=fig_combined.transFigure, 
                                 fontsize=POSTER_FONT_SIZE, verticalalignment='bottom', horizontalalignment='right',
                                 color=right_color, weight='bold')
 
